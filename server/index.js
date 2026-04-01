@@ -135,6 +135,28 @@ const ensureAdminUser = async () => {
 
 ensureAdminUser();
 
+const ensureFavoritesTable = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS favorites (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        article_id INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await pool.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS favorites_user_article_unique
+      ON favorites (user_id, article_id)
+    `);
+  } catch (err) {
+    console.error('Favorites table setup error:', err);
+  }
+};
+
+ensureFavoritesTable();
+
 // --- 3. MULTER ---
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -307,6 +329,9 @@ app.post('/api/comments', async (req, res) => {
 // Таңдаулыға қосу
 app.post('/api/favorites', async (req, res) => {
     const { user_id, article_id } = req.body;
+    if (!user_id || !article_id) {
+        return res.status(400).json({ error: 'user_id and article_id are required' });
+    }
     try {
         await pool.query(
             "INSERT INTO favorites (user_id, article_id) VALUES ($1, $2) ON CONFLICT (user_id, article_id) DO NOTHING",
