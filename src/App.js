@@ -170,7 +170,7 @@ function App() {
   const [authData, setAuthData] = useState({ email: '', password: '', fullname: '' });
   const [formData, setFormData] = useState({ title: '', content: '', region: 'Астана', image: null, agreed: false });
   const [weather, setWeather] = useState("...");
-  const [usdRate, setUsdRate] = useState("448.5");
+  const [usdRate] = useState("448.5");
   const [searchTerm, setSearchTerm] = useState("");
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState({});

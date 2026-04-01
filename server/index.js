@@ -33,6 +33,33 @@ app.use(cors({
 }));
 app.use(express.json());
 
+const runtimeAllowedOrigins = new Set([
+  ...allowedOrigins,
+  ...(process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean)
+]);
+
+app.use((req, res, next) => {
+  const requestOrigin = req.headers.origin;
+  const isGithubPages = requestOrigin && /https:\/\/.*\.github\.io$/.test(requestOrigin);
+
+  if (requestOrigin && (runtimeAllowedOrigins.has(requestOrigin) || isGithubPages)) {
+    res.header('Access-Control-Allow-Origin', requestOrigin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  }
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 const uploadDir = path.join(__dirname, 'uploads');
 // ... қалған код
 
