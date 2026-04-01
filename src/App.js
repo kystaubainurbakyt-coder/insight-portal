@@ -4,11 +4,10 @@ import AdminPanel from './AdminPanel';
 import logo from './assets/logo.png';
 
 const API_BASE = process.env.REACT_APP_API_BASE || '';
-const MEDIA_BASE = process.env.REACT_APP_MEDIA_BASE || process.env.REACT_APP_API_BASE || 'https://insight-portal-5nmu.onrender.com';
 const apiUrl = (path) => `${API_BASE}${path}`;
 const assetUrl = (path) => {
   if (!path) return path;
-  return path.startsWith('http') ? path : `${MEDIA_BASE}${path}`;
+  return path.startsWith('http') ? path : `${API_BASE}${path}`;
 };
 
 // --- 1. АЙМАҚТАР ТІЗІМІ ---
