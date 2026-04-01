@@ -323,6 +323,7 @@ useEffect(() => {
       if (isSaved) {
         await axios.delete(apiUrl(`/api/favorites/${user.id}/${articleId}`));
         setFavorites((prev) => prev.filter((favorite) => favorite.id !== articleId));
+        console.log("Мақалаңыз сақтаудан алынды!");
       } else {
         await axios.post(apiUrl('/api/favorites'), { user_id: user.id, article_id: articleId });
 
@@ -332,6 +333,7 @@ useEffect(() => {
         } else {
           fetchFavorites(user.id);
         }
+        console.log("Мақалаңыз сәтті сақталды, жеке бетке өтіңіз!");
       }
     } catch (err) { alert("Сақтау мүмкін болмады"); }
   };
@@ -424,17 +426,31 @@ useEffect(() => {
                 <span style={regionTagStyle}>{a.region}</span>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: '#888' }}>👁 {a.views || 0}</span>
-                  <span
-                    onClick={() => handleLike(a.id)}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleLike(a.id);
+                    }}
+                    aria-label="Сақтау"
+                    title="Сақтау"
                     style={{
+                      border: 'none',
+                      background: 'transparent',
+                      padding: 0,
+                      margin: 0,
                       cursor: 'pointer',
                       fontSize: '1.2rem',
-                      color: favorites.some((favorite) => favorite.id === a.id) ? '#ff4d4d' : '#888',
+                      lineHeight: 1,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: favorites.some((favorite) => favorite.id === a.id) ? '#b8860b' : '#ff4d4d',
                       transition: 'color 0.2s ease'
                     }}
                   >
                     🔖
-                  </span>
+                  </button>
                   {user && user.fullname === a.author_name && (
                     <button onClick={() => handleDelete(a.id)} style={deleteBtnStyle}>Өшіру</button>
                   )}
