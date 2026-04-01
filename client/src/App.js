@@ -519,10 +519,13 @@ useEffect(() => {
 
       <footer style={footerStyle}>
         <div style={footerContentStyle}>
-          <div>
-            <div style={{ fontWeight: '800', fontSize: '1.2rem' }}>INSIGHT</div>
-            <div style={{ fontSize: '0.75rem', color: '#cfcfcf', marginTop: '8px', maxWidth: '260px', lineHeight: '1.6' }}>
-              Ұлттық ақпараттық портал. Бізбен бірге маңызды жаңалықтар мен терең талдауларға жол ашыңыз.
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+            <img src={logo} alt="INSIGHT" style={{ width: '64px', height: '64px', objectFit: 'contain', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontWeight: '800', fontSize: '1.2rem' }}>INSIGHT</div>
+              <div style={{ fontSize: '0.75rem', color: '#cfcfcf', marginTop: '8px', maxWidth: '260px', lineHeight: '1.6' }}>
+                Ұлттық ақпараттық портал. Бізбен бірге маңызды жаңалықтар мен терең талдауларға жол ашыңыз.
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '20px' }}>
