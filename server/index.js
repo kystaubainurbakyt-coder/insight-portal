@@ -20,10 +20,14 @@ const allowedOrigins = [
   'https://kystaubainurbakyt.github.io'
 ];
 
+const isAllowedDynamicOrigin = (origin) =>
+  /https:\/\/.*\.github\.io$/.test(origin) ||
+  /https:\/\/.*\.vercel\.app$/.test(origin);
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // Полезно для запуска сервер-сервер
-    if (allowedOrigins.includes(origin) || /https:\/\/.*\.github\.io$/.test(origin)) {
+    if (allowedOrigins.includes(origin) || isAllowedDynamicOrigin(origin)) {
       return callback(null, true);
     }
     return callback(new Error(`CORS policy: origin ${origin} not allowed`));
@@ -43,9 +47,9 @@ const runtimeAllowedOrigins = new Set([
 
 app.use((req, res, next) => {
   const requestOrigin = req.headers.origin;
-  const isGithubPages = requestOrigin && /https:\/\/.*\.github\.io$/.test(requestOrigin);
+  const isDynamicAllowedOrigin = requestOrigin && isAllowedDynamicOrigin(requestOrigin);
 
-  if (requestOrigin && (runtimeAllowedOrigins.has(requestOrigin) || isGithubPages)) {
+  if (requestOrigin && (runtimeAllowedOrigins.has(requestOrigin) || isDynamicAllowedOrigin)) {
     res.header('Access-Control-Allow-Origin', requestOrigin);
     res.header('Vary', 'Origin');
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -60,7 +64,12 @@ app.use((req, res, next) => {
   next();
 });
 
-const uploadDir = path.join(__dirname, 'uploads');
+const uploadDir = process.env.VERCEL
+  ? path.join('/tmp', 'uploads')
+  : path.join(__dirname, 'uploads');
+
+fs.mkdirSync(uploadDir, { recursive: true });
+app.use('/uploads', express.static(uploadDir));
 // ... қалған код
 
 // --- 2. ДЕРЕКТЕР ҚОРЫ (PostgreSQL) ---
@@ -90,7 +99,7 @@ pool
 
 // --- 3. MULTER ---
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
+    destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
 const upload = multer({ storage: storage });
@@ -341,6 +350,10 @@ app.put('/api/admin/articles/:id/status', async (req, res) => {
 // --- СЕРВЕРДІ ҚОСУ ---
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Сервер ${PORT} портында қосулы`);
-});
+if (require.main === module) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Сервер ${PORT} портында қосулы`);
+    });
+}
+
+module.exports = app;

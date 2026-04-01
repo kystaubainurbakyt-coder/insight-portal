@@ -3,6 +3,13 @@ import axios from 'axios';
 import AdminPanel from './AdminPanel'; 
 import logo from './assets/logo.png';
 
+const API_BASE = process.env.REACT_APP_API_BASE || '';
+const apiUrl = (path) => `${API_BASE}${path}`;
+const assetUrl = (path) => {
+  if (!path) return path;
+  return path.startsWith('http') ? path : `${API_BASE}${path}`;
+};
+
 // --- 1. АЙМАҚТАР ТІЗІМІ ---
 const regions = [
   "Астана", "Алматы қаласы", "Шымкент", 
@@ -22,7 +29,7 @@ const ProfilePage = ({ user, onBack, setUser }) => {
 
   useEffect(() => {
     if (user && user.id) {
-      axios.get(`https://insight-portal-5nmu.onrender.com/api/favorites/${user.id}`)
+      axios.get(apiUrl(`/api/favorites/${user.id}`))
         .then(res => setFavorites(res.data))
         .catch(err => console.log("Таңдаулыларды алу қатесі"));
     }
@@ -33,7 +40,7 @@ const ProfilePage = ({ user, onBack, setUser }) => {
       return alert("Баланста ақша жеткіліксіз! (Кемінде 5000 ₸ керек)");
     }
     try {
-      const res = await axios.post('https://insight-portal-5nmu.onrender.com/api/users/buy-rights', { user_id: user.id });
+      const res = await axios.post(apiUrl('/api/users/buy-rights'), { user_id: user.id });
       alert(res.data.message);
       setUser(res.data.user);
     } catch (err) {
@@ -45,7 +52,7 @@ const ProfilePage = ({ user, onBack, setUser }) => {
     e.preventDefault();
     if (cardData.number.length < 16) return alert("Карта нөмірі қате!");
     try {
-      const res = await axios.post('https://insight-portal-5nmu.onrender.com/api/users/add-balance', { 
+      const res = await axios.post(apiUrl('/api/users/add-balance'), { 
         user_id: user.id, 
         amount: 5000 
       });
@@ -181,21 +188,21 @@ function App() {
 
   const fetchArticles = useCallback(async () => {
     try {
-      const res = await axios.get('https://insight-portal-5nmu.onrender.com/api/articles');
+      const res = await axios.get(apiUrl('/api/articles'));
       setArticles(res.data || []);
     } catch (err) { console.error("Сервер қатесі:", err); }
   }, []);
 
   const fetchComments = useCallback(async (articleId) => {
     try {
-      const res = await axios.get(`https://insight-portal-5nmu.onrender.com/api/articles/${articleId}/comments`);
+      const res = await axios.get(apiUrl(`/api/articles/${articleId}/comments`));
       setComments(prev => ({ ...prev, [articleId]: res.data }));
     } catch (err) { console.error("Пікірлер қатесі", err); }
   }, []);
 
   const fetchNotifications = useCallback(async (userId) => {
     try {
-      const res = await axios.get(`https://insight-portal-5nmu.onrender.com/api/notifications/${userId}`);
+      const res = await axios.get(apiUrl(`/api/notifications/${userId}`));
       setNotifications(res.data || []);
     } catch (err) { console.log("Хабарлама алу қатесі"); }
   }, []);
@@ -242,7 +249,7 @@ useEffect(() => {
   const handleAuth = (e) => {
     e.preventDefault();
     const endpoint = authMode === 'login' ? 'login' : 'register';
-    axios.post(`https://insight-portal-5nmu.onrender.com/api/${endpoint}`, authData)
+    axios.post(apiUrl(`/api/${endpoint}`), authData)
       .then(res => {
         if (authMode === 'login') {
           setUser(res.data.user);
@@ -269,7 +276,7 @@ useEffect(() => {
 
   try {
     // 2. Серверге жіберу
-    await axios.post('https://insight-portal-5nmu.onrender.com/api/articles', data);
+    await axios.post(apiUrl('/api/articles'), data);
     
     // 3. ПАЙДАЛАНУШЫҒА ХАБАРЛАМА ШЫҒАРУ
     alert("Құттықтаймыз! Мақалаңыз сәтті жіберілді. Админ тексеріп, мақұлдаған соң сайтта жарияланады.");
@@ -286,20 +293,20 @@ useEffect(() => {
 
   const handleDelete = (id) => {
     if (window.confirm("Бұл мақаланы өшіргіңіз келе ме?")) {
-      axios.delete(`https://insight-portal-5nmu.onrender.com/api/articles/${id}`).then(() => fetchArticles());
+      axios.delete(apiUrl(`/api/articles/${id}`)).then(() => fetchArticles());
     }
   };
 
   const handleLike = async (articleId) => {
     if (!user) return alert("Бетбелгілерге сақтау үшін жүйеге кіріңіз!");
     try {
-      await axios.post('https://insight-portal-5nmu.onrender.com/api/favorites', { user_id: user.id, article_id: articleId });
+      await axios.post(apiUrl('/api/favorites'), { user_id: user.id, article_id: articleId });
       alert("Мақала сәтті сақталды! 🔖");
     } catch (err) { alert("Сақтау мүмкін болмады"); }
   };
 
   const handleView = async (id) => {
-    try { await axios.put(`https://insight-portal-5nmu.onrender.com/api/articles/${id}/view`); fetchArticles(); } catch (err) {}
+    try { await axios.put(apiUrl(`/api/articles/${id}/view`)); fetchArticles(); } catch (err) {}
   };
 
   if (currentPage === 'admin' && user?.is_admin) return <AdminPanel onBack={() => setCurrentPage('main')} />;
@@ -393,7 +400,7 @@ useEffect(() => {
                 </div>
               </div>
               {a.image_url && (
-                <img src={`https://insight-portal-5nmu.onrender.com${a.image_url}`} alt="article" onClick={() => handleView(a.id)} style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '5px', marginTop: '15px', cursor: 'pointer' }} />
+                <img src={assetUrl(a.image_url)} alt="article" onClick={() => handleView(a.id)} style={{ width: '100%', maxHeight: '400px', objectFit: 'cover', borderRadius: '5px', marginTop: '15px', cursor: 'pointer' }} />
               )}
               <h3 style={{...articleTitle, cursor: 'pointer'}} onClick={() => handleView(a.id)}>{a.title}</h3>
               <p style={articleContent}>{a.content}</p>
@@ -427,7 +434,7 @@ useEffect(() => {
                     <button style={{ ...btnStyle, width: 'auto' }} onClick={async () => {
                         if (!commentText.trim()) return;
                         try {
-                          await axios.post('https://insight-portal-5nmu.onrender.com/api/comments', { article_id: a.id, user_id: user.id, author_name: user.fullname, content: commentText });
+                          await axios.post(apiUrl('/api/comments'), { article_id: a.id, user_id: user.id, author_name: user.fullname, content: commentText });
                           setCommentText("");
                           fetchComments(a.id);
                         } catch (err) { alert("Қате!"); }

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_BASE = process.env.REACT_APP_API_BASE || '';
+const apiUrl = (path) => `${API_BASE}${path}`;
+
 const AdminPanel = ({ onBack }) => {
     const [pendingArticles, setPendingArticles] = useState([]);
     
@@ -15,7 +18,7 @@ const AdminPanel = ({ onBack }) => {
 
     const fetchPending = async () => {
         try {
-            const res = await axios.get('https://insight-portal-5nmu.onrender.com/api/admin/pending-articles');
+            const res = await axios.get(apiUrl('/api/admin/pending-articles'));
             setPendingArticles(res.data);
         } catch (err) {
             console.error("Мәлімет алу қатесі:", err);
@@ -25,7 +28,7 @@ const AdminPanel = ({ onBack }) => {
     const handleApprove = async (id, userId) => {
         try {
             // Статусты 'approved' деп өзгерту және хабарлама жіберу
-            await axios.put(`https://insight-portal-5nmu.onrender.com/api/admin/articles/${id}/status`, {
+            await axios.put(apiUrl(`/api/admin/articles/${id}/status`), {
                 status: 'approved',
                 userId: userId // Backend-те хабарлама жіберу үшін керек
             });
@@ -50,7 +53,7 @@ const AdminPanel = ({ onBack }) => {
         }
 
         try {
-            await axios.put(`https://insight-portal-5nmu.onrender.com/api/admin/articles/${selectedArticle.id}/status`, {
+            await axios.put(apiUrl(`/api/admin/articles/${selectedArticle.id}/status`), {
                 status: 'rejected',
                 reason: rejectionReason,
                 userId: selectedArticle.user_id
