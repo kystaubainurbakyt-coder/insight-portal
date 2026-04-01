@@ -252,6 +252,7 @@ useEffect(() => {
     axios.post(apiUrl(`/api/${endpoint}`), authData)
       .then(res => {
         if (authMode === 'login') {
+          console.log('Login successful:', res.data.user);
           setUser(res.data.user);
           setShowAuth(false);
           if (res.data.user.is_admin) setCurrentPage('admin');
