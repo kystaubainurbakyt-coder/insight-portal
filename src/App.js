@@ -210,12 +210,10 @@ function App() {
   const WEATHER_API_KEY = "297a27d3a5cdd2a98def0a940e388b4f";
 
   const fetchArticles = useCallback(async () => {
-    setIsRefreshing(true);
     try {
       const res = await axios.get(apiUrl('/api/articles'));
       setArticles(res.data || []);
     } catch (err) { console.error("Сервер қатесі:", err); }
-    setIsRefreshing(false);
   }, []);
 
   const fetchFavorites = useCallback(async (userId) => {
@@ -336,6 +334,7 @@ useEffect(() => {
   data.append('user_id', user.id);
 
   try {
+    setIsRefreshing(true);
     // 2. Серверге жіберу
     await axios.post(apiUrl('/api/articles'), data);
     
@@ -349,6 +348,8 @@ useEffect(() => {
   } catch (err) {
     console.error("Жіберу қатесі:", err);
     alert("Мақаланы жіберу кезінде қате кетті. Қайта көріңіз.");
+  } finally {
+    setIsRefreshing(false);
   }
 };
 
@@ -462,7 +463,6 @@ useEffect(() => {
       <main style={{...mainLayout, flex: 1}}>
         <section>
           <h2 style={sectionTitle}>{selectedRegion === "Барлық жаңалықтар" ? "Соңғы жаңалықтар" : selectedRegion}</h2>
-          {isRefreshing && <p style={{ color: '#b8860b', margin: '0 0 16px', fontWeight: '600' }}>Жүктеулде</p>}
           {filteredArticles.length > 0 ? filteredArticles.map(a => (
             <div key={a.id} style={articleCardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -562,6 +562,7 @@ useEffect(() => {
                     <input type="checkbox" checked={formData.agreed} onChange={e => setFormData({...formData, agreed: e.target.checked})} />
                     <span style={{fontSize: '0.7rem'}}>Мәліметтердің дұрыстығын растаймын</span>
                   </div>
+                  {isRefreshing && <p style={{ color: '#b8860b', margin: '0 0 12px', fontWeight: '600', textAlign: 'center' }}>Жүктеулде</p>}
                   <button style={btnStyle} onClick={handlePost}>ЖАРИЯЛАУ</button>
                 </>
               )}
