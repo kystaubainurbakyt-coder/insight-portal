@@ -239,6 +239,25 @@ useEffect(() => {
   fetchArticles();
 }, [fetchArticles]);
 
+useEffect(() => {
+  const interval = setInterval(() => {
+    fetchArticles();
+  }, 10000);
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      fetchArticles();
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  return () => {
+    clearInterval(interval);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+}, [fetchArticles]);
+
 // 2. Іздеу немесе аймақ өзгергенде filteredArticles-ті жаңарту
 useEffect(() => {
   const filtered = articles.filter(a => {
