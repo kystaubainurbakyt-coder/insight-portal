@@ -19,7 +19,6 @@ if (!fs.existsSync(uploadDir)) {
 app.use('/uploads', express.static(uploadDir));
 
 // --- 2. ДЕРЕКТЕР ҚОРЫ (PostgreSQL) ---
-const { Pool } = require('pg');
 
 // Бұл жерде ешқандай қауіп жоқ, екеуі де жұмыс істейді:
 const pool = new Pool(
