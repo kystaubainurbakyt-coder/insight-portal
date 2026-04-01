@@ -235,6 +235,7 @@ app.post('/api/articles', upload.single('image'), async (req, res) => {
         );
         res.json(newArticle.rows[0]);
     } catch (err) {
+        console.error('Create article error:', err);
         res.status(500).json({ message: "Мақаланы сақтау қатесі" });
     }
 });
