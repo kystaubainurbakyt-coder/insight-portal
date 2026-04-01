@@ -344,6 +344,19 @@ app.post('/api/favorites', async (req, res) => {
 });
 
 // Таңдаулыларды алу
+app.delete('/api/favorites/:user_id/:article_id', async (req, res) => {
+    const { user_id, article_id } = req.params;
+    try {
+        await pool.query(
+            "DELETE FROM favorites WHERE user_id = $1 AND article_id = $2",
+            [user_id, article_id]
+        );
+        res.json({ message: "Өшірілді" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/favorites/:user_id', async (req, res) => {
     try {
         const result = await pool.query(

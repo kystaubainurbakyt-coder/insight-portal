@@ -169,6 +169,7 @@ const cityMapping = {
 // --- 5. НЕГІЗГІ APP КОМПОНЕНТІ ---
 function App() {
   const [articles, setArticles] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState("Барлық жаңалықтар");
   const [user, setUser] = useState(null);
@@ -192,6 +193,20 @@ function App() {
       const res = await axios.get(apiUrl('/api/articles'));
       setArticles(res.data || []);
     } catch (err) { console.error("Сервер қатесі:", err); }
+  }, []);
+
+  const fetchFavorites = useCallback(async (userId) => {
+    if (!userId) {
+      setFavorites([]);
+      return;
+    }
+
+    try {
+      const res = await axios.get(apiUrl(`/api/favorites/${userId}`));
+      setFavorites(res.data || []);
+    } catch (err) {
+      console.log("Favorites fetch error");
+    }
   }, []);
 
   const fetchComments = useCallback(async (articleId) => {
@@ -240,12 +255,14 @@ useEffect(() => {
 useEffect(() => {
   if (user && user.id) {
     fetchNotifications(user.id);
+    fetchFavorites(user.id);
     
     // Әр 30 секунд сайын жаңа хабарлама бар-жоғын тексеріп тұру (опционалды)
     const interval = setInterval(() => fetchNotifications(user.id), 30000);
     return () => clearInterval(interval);
   }
-}, [user, fetchNotifications]);
+  setFavorites([]);
+}, [user, fetchNotifications, fetchFavorites]);
 
   const handleAuth = (e) => {
     e.preventDefault();
@@ -301,9 +318,21 @@ useEffect(() => {
 
   const handleLike = async (articleId) => {
     if (!user) return alert("Бетбелгілерге сақтау үшін жүйеге кіріңіз!");
+    const isSaved = favorites.some((favorite) => favorite.id === articleId);
     try {
-      await axios.post(apiUrl('/api/favorites'), { user_id: user.id, article_id: articleId });
-      alert("Мақала сәтті сақталды! 🔖");
+      if (isSaved) {
+        await axios.delete(apiUrl(`/api/favorites/${user.id}/${articleId}`));
+        setFavorites((prev) => prev.filter((favorite) => favorite.id !== articleId));
+      } else {
+        await axios.post(apiUrl('/api/favorites'), { user_id: user.id, article_id: articleId });
+
+        const articleToSave = articles.find((article) => article.id === articleId);
+        if (articleToSave) {
+          setFavorites((prev) => [...prev.filter((favorite) => favorite.id !== articleId), articleToSave]);
+        } else {
+          fetchFavorites(user.id);
+        }
+      }
     } catch (err) { alert("Сақтау мүмкін болмады"); }
   };
 
@@ -395,7 +424,17 @@ useEffect(() => {
                 <span style={regionTagStyle}>{a.region}</span>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: '#888' }}>👁 {a.views || 0}</span>
-                  <span onClick={() => handleLike(a.id)} style={{cursor: 'pointer', fontSize: '1.2rem'}}>🔖</span>
+                  <span
+                    onClick={() => handleLike(a.id)}
+                    style={{
+                      cursor: 'pointer',
+                      fontSize: '1.2rem',
+                      color: favorites.some((favorite) => favorite.id === a.id) ? '#ff4d4d' : '#888',
+                      transition: 'color 0.2s ease'
+                    }}
+                  >
+                    🔖
+                  </span>
                   {user && user.fullname === a.author_name && (
                     <button onClick={() => handleDelete(a.id)} style={deleteBtnStyle}>Өшіру</button>
                   )}
