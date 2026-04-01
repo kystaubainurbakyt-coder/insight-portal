@@ -9,14 +9,14 @@ const fs = require('fs');
 const app = express();
 
 // --- 1. БАПТАУЛАР ---
-app.use(cors());
+// --- 1. БАПТАУЛАР ---
+app.use(cors({
+    origin: 'https://insight-frontend.onrender.com' // ОСЫ ЖЕРГЕ Фронтенд сілтемесін қоясың
+}));
 app.use(express.json());
 
 const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
-app.use('/uploads', express.static(uploadDir));
+// ... қалған код
 
 // --- 2. ДЕРЕКТЕР ҚОРЫ (PostgreSQL) ---
 
