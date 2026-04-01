@@ -183,7 +183,7 @@ function App() {
   const [articles, setArticles] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSubmittingArticle, setIsSubmittingArticle] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("Барлық жаңалықтар");
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState('main'); 
@@ -325,7 +325,7 @@ useEffect(() => {
   data.append('user_id', user.id);
 
   try {
-    setIsRefreshing(true);
+    setIsSubmittingArticle(true);
     // 2. Серверге жіберу
     await axios.post('https://insight-portal-5nmu.onrender.com/api/articles', data);
     
@@ -340,7 +340,7 @@ useEffect(() => {
     console.error("Жіберу қатесі:", err);
     alert("Мақаланы жіберу кезінде қате кетті. Қайта көріңіз.");
   } finally {
-    setIsRefreshing(false);
+    setIsSubmittingArticle(false);
   }
 };
 
@@ -552,7 +552,7 @@ useEffect(() => {
                     <input type="checkbox" checked={formData.agreed} onChange={e => setFormData({...formData, agreed: e.target.checked})} />
                     <span style={{fontSize: '0.7rem'}}>Мәліметтердің дұрыстығын растаймын</span>
                   </div>
-                  {isRefreshing && <p style={{ color: '#b8860b', margin: '0 0 12px', fontWeight: '600', textAlign: 'center' }}>Жүктеулде</p>}
+                  {isSubmittingArticle && <p style={{ color: '#b8860b', margin: '0 0 12px', fontWeight: '600', textAlign: 'center' }}>Жүктеулде</p>}
                   <button style={btnStyle} onClick={handlePost}>ЖАРИЯЛАУ</button>
                 </>
               )}
