@@ -83,6 +83,11 @@ const pool = new Pool(
       }
 );
 
+pool
+  .query('SELECT NOW()')
+  .then(() => console.log('PostgreSQL connection OK'))
+  .catch((err) => console.error('PostgreSQL connection error:', err));
+
 // --- 3. MULTER ---
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
