@@ -97,6 +97,37 @@ pool
   .then(() => console.log('PostgreSQL connection OK'))
   .catch((err) => console.error('PostgreSQL connection error:', err));
 
+const ensureAdminUser = async () => {
+  try {
+    const adminEmail = 'admin@gmail.com';
+    const adminPassword = '123123';
+
+    const existingAdmin = await pool.query(
+      'SELECT id FROM users WHERE email = $1 LIMIT 1',
+      [adminEmail]
+    );
+
+    if (existingAdmin.rows.length > 0) {
+      console.log('Admin user already exists');
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+    await pool.query(
+      `INSERT INTO users (email, password, fullname, purpose, balance, has_author_rights, is_admin)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [adminEmail, hashedPassword, 'Administrator', 'admin', 0, true, true]
+    );
+
+    console.log('Admin user created: admin@gmail.com');
+  } catch (err) {
+    console.error('Admin seed error:', err);
+  }
+};
+
+ensureAdminUser();
+
 // --- 3. MULTER ---
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
