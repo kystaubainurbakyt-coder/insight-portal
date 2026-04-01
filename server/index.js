@@ -291,6 +291,6 @@ app.put('/api/admin/articles/:id/status', async (req, res) => {
 // --- СЕРВЕРДІ ҚОСУ ---
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Сервер ${PORT} портында қосулы`);
 });
