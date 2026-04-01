@@ -198,6 +198,7 @@ function App() {
   const [comments, setComments] = useState({});
   const [notifications, setNotifications] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
+  const unreadNotificationsCount = notifications.filter((notification) => !notification.is_read).length;
 
   const WEATHER_API_KEY = "297a27d3a5cdd2a98def0a940e388b4f";
 
@@ -236,6 +237,20 @@ function App() {
     } catch (err) { console.log("Хабарлама алу қатесі"); }
   }, []);
 // 1. Бет жүктелгенде мақалаларды серверден бірінші рет алу
+const handleNotificationsToggle = async () => {
+  const nextShowNotif = !showNotif;
+  setShowNotif(nextShowNotif);
+
+  if (nextShowNotif && user?.id && unreadNotificationsCount > 0) {
+    try {
+      await axios.put(`https://insight-portal-5nmu.onrender.com/api/notifications/read/${user.id}`);
+      setNotifications((prev) => prev.map((notification) => ({ ...notification, is_read: true })));
+    } catch (err) {
+      console.log("Notifications read update error");
+    }
+  }
+};
+
 useEffect(() => {
   fetchArticles();
 }, [fetchArticles]);
@@ -396,10 +411,10 @@ useEffect(() => {
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               <div style={{ position: 'relative' }}>
-                <span onClick={() => setShowNotif(!showNotif)} style={{ cursor: 'pointer', fontSize: '1.4rem' }}>
-                  🔔 {notifications.length > 0 && (
+                <span onClick={handleNotificationsToggle} style={{ cursor: 'pointer', fontSize: '1.4rem' }}>
+                  🔔 {unreadNotificationsCount > 0 && (
                     <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'red', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '10px' }}>
-                      {notifications.length}
+                      {unreadNotificationsCount}
                     </span>
                   )}
                 </span>
