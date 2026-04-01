@@ -484,6 +484,9 @@ useEffect(() => {
       {showAuth && (
         <div style={modalOverlayStyle}>
           <div style={modalContentStyle}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <img src={logo} alt="INSIGHT" style={{ width: '110px', height: 'auto', objectFit: 'contain' }} />
+            </div>
             <h2 style={{ textAlign: 'center' }}>{authMode === 'login' ? 'КІРУ' : 'ТІРКЕЛУ'}</h2>
             <form onSubmit={handleAuth}>
               {authMode === 'register' && <input style={inputStyle} placeholder="Аты-жөні" required value={authData.fullname} onChange={e => setAuthData({...authData, fullname: e.target.value})} />}
