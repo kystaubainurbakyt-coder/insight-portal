@@ -484,7 +484,7 @@ useEffect(() => {
       {showAuth && (
         <div style={modalOverlayStyle}>
           <div style={modalContentStyle}>
-            <h2>{authMode === 'login' ? 'КІРУ' : 'ТІРКЕЛУ'}</h2>
+            <h2 style={{ textAlign: 'center' }}>{authMode === 'login' ? 'КІРУ' : 'ТІРКЕЛУ'}</h2>
             <form onSubmit={handleAuth}>
               {authMode === 'register' && <input style={inputStyle} placeholder="Аты-жөні" required value={authData.fullname} onChange={e => setAuthData({...authData, fullname: e.target.value})} />}
               <input style={inputStyle} type="email" placeholder="Email" required value={authData.email} onChange={e => setAuthData({...authData, email: e.target.value})} />
