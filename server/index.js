@@ -3,10 +3,17 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
+const { v2: cloudinary } = require('cloudinary');
 const path = require('path');
 const fs = require('fs');
 
 const app = express();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // --- 1. БАПТАУЛАР ---
 // --- 1. БАПТАУЛАР ---
@@ -129,11 +136,7 @@ const ensureAdminUser = async () => {
 ensureAdminUser();
 
 // --- 3. MULTER ---
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
-});
-const upload = multer({ storage: storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // --- 4. РОУТТАР ---
 
@@ -207,7 +210,25 @@ app.post('/api/users/buy-rights', async (req, res) => {
 app.post('/api/articles', upload.single('image'), async (req, res) => {
     try {
         const { title, content, region, author_name, user_id } = req.body;
-        const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+        let imageUrl = null;
+
+        if (req.file) {
+            imageUrl = await new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'insight-portal',
+                        resource_type: 'image'
+                    },
+                    (error, result) => {
+                        if (error) return reject(error);
+                        resolve(result.secure_url);
+                    }
+                );
+
+                uploadStream.end(req.file.buffer);
+            });
+        }
+
         const newArticle = await pool.query(
             "INSERT INTO articles (title, content, region, author_name, image_url, user_id, status) VALUES ($1, $2, $3, $4, $5, $6, 'pending') RETURNING *",
             [title, content, region, author_name, imageUrl, user_id]
