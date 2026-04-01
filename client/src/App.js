@@ -183,6 +183,7 @@ function App() {
   const [articles, setArticles] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("Барлық жаңалықтар");
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState('main'); 
@@ -201,10 +202,12 @@ function App() {
   const WEATHER_API_KEY = "297a27d3a5cdd2a98def0a940e388b4f";
 
   const fetchArticles = useCallback(async () => {
+    setIsRefreshing(true);
     try {
       const res = await axios.get('https://insight-portal-5nmu.onrender.com/api/articles');
       setArticles(res.data || []);
     } catch (err) { console.error("Сервер қатесі:", err); }
+    setIsRefreshing(false);
   }, []);
 
   const fetchFavorites = useCallback(async (userId) => {
@@ -449,6 +452,7 @@ useEffect(() => {
       <main style={{...mainLayout, flex: 1}}>
         <section>
           <h2 style={sectionTitle}>{selectedRegion === "Барлық жаңалықтар" ? "Соңғы жаңалықтар" : selectedRegion}</h2>
+          {isRefreshing && <p style={{ color: '#b8860b', margin: '0 0 16px', fontWeight: '600' }}>Жүктеулде</p>}
           {filteredArticles.length > 0 ? filteredArticles.map(a => (
             <div key={a.id} style={articleCardStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
