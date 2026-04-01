@@ -19,13 +19,25 @@ if (!fs.existsSync(uploadDir)) {
 app.use('/uploads', express.static(uploadDir));
 
 // --- 2. ДЕРЕКТЕР ҚОРЫ (PostgreSQL) ---
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'makala_db',
-    password: '1234',
-    port: 5432,
-});
+const { Pool } = require('pg');
+
+// Бұл жерде ешқандай қауіп жоқ, екеуі де жұмыс істейді:
+const pool = new Pool(
+  process.env.DATABASE_URL 
+    ? {
+        // РЕНДЕР ҮШІН (Интернетте тұрғанда):
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+      }
+    : {
+        // СЕНІҢ КОМПЬЮТЕРІҢ ҮШІН (Localhost):
+        user: 'postgres',
+        host: 'localhost',
+        database: 'makala_db',
+        password: '1234',
+        port: 5432,
+      }
+);
 
 // --- 3. MULTER ---
 const storage = multer.diskStorage({
