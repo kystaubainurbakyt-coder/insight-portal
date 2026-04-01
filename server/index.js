@@ -10,8 +10,26 @@ const app = express();
 
 // --- 1. БАПТАУЛАР ---
 // --- 1. БАПТАУЛАР ---
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3001',
+  'https://insight-frontend.onrender.com',
+  'https://kystaubainurbakyt-coder.github.io',
+  'https://kystaubainurbakyt.github.io'
+];
+
 app.use(cors({
-    origin: 'https://insight-frontend.onrender.com' // ОСЫ ЖЕРГЕ Фронтенд сілтемесін қоясың
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true); // Полезно для запуска сервер-сервер
+    if (allowedOrigins.includes(origin) || /https:\/\/.*\.github\.io$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS policy: origin ${origin} not allowed`));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
 }));
 app.use(express.json());
 
